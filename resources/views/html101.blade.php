@@ -1,392 +1,885 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-  <meta charset="UTF-8">
-  <link rel="stylesheet" href="css/boostrap.css">
-  <title>Workshop</title>
-  <style>
-    /* พื้นหลังและโครงสร้าง */
+@extends('template.default')
+{{-- บอก Laravel ว่าไฟล์นี้สืบทอด layout หลักจาก template.default --}}
+
+@section('title', 'Workshop Form')
+{{-- กำหนดค่า title ของหน้าเว็บ ส่งไปให้ layout หลักใช้ --}}
+
+@section('style')
+{{-- เปิด section สำหรับเขียน CSS เฉพาะหน้านี้ --}}
+<style>
+    /* ==============================
+       ROOT VARIABLES (ตัวแปรกลาง)
+       ============================== */
+    :root {
+        --theme-color: #ff4f81;   /* สีหลักของธีม (ชมพู) ใช้ซ้ำทั้งเว็บ */
+        --error-color: #e60023;   /* สีแดงสำหรับ error / validation */
+    }
+
+    /* ==============================
+       GLOBAL STYLE (ทั้งหน้าเว็บ)
+       ============================== */
     body {
-      margin: 0;
-      padding: 0;
-      background: linear-gradient(135deg, #ff4f81, #1e90ff);
-      font-family: 'Arial', sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
+        margin: 0;                       /* ลบ margin ค่าเริ่มต้นของ browser */
+        padding: 0;                      /* ลบ padding ค่าเริ่มต้นของ browser */
+        --fav-color: #ff4f81;            /* ตัวแปรสีโปรด ใช้กับพื้นหลัง */
+        background:                      /* กำหนดพื้นหลังเป็น gradient */
+            linear-gradient(
+                135deg,                 /* มุมของ gradient */
+                var(--fav-color),       /* สีเริ่มต้น (ชมพู) */
+                #1e90ff                 /* สีปลายทาง (ฟ้า) */
+            );
+        font-family: 'Arial', sans-serif; /* ฟอนต์หลักของทั้งหน้า */
+        height: 100vh;                  /* ความสูงเต็มหน้าจอ */
     }
 
-    /* กล่องฟอร์ม */
+    /* ==============================
+       REGISTER BOX (กล่องฟอร์ม)
+       ============================== */
     .register-box {
-      background: rgba(0,0,0,0.7);
-      padding: 40px;
-      border-radius: 15px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.5);
-      width: 400px;
-      color: white;
+        width: 400px;                   /* ความกว้างของกล่องฟอร์ม */
+        margin: 40px auto;              /* จัดให้อยู่กึ่งกลาง + เว้นด้านบน */
+        padding: 40px;                  /* ระยะห่างด้านในกล่อง */
+        color: white;                   /* สีตัวอักษรทั้งหมดในกล่อง */
+        background:                     /* พื้นหลังสีดำโปร่ง */
+            rgba(0, 0, 0, 0.7);
+        border-radius: 15px;            /* มุมกล่องโค้งมน */
+        box-shadow:                     /* เงาด้านหลังกล่อง */
+            0 0 20px rgba(0, 0, 0, 0.5);
     }
 
-    /* หัวข้อฟอร์ม */
-    .register-box h2 {
-      text-align: center;
-      margin-bottom: 30px;
-      font-size: 28px;
-      letter-spacing: 1px;
-      text-shadow: 2px 2px 5px black;
+    /* ==============================
+       HEAD TITLE (หัวข้อฟอร์ม)
+       ============================== */
+    h2 {
+        text-align: center;             /* จัดข้อความให้อยู่กลาง */
+        margin-bottom: 30px;            /* เว้นระยะด้านล่าง */
+        font-size: 23px;                /* ขนาดตัวอักษร */
+        letter-spacing: 1px;            /* ระยะห่างตัวอักษร */
+        text-shadow:                    /* เงาของตัวอักษร */
+            2px 2px 5px black;
     }
 
-    /* input user ฟอร์ม */
+    /* ==============================
+       INPUT & TEXTAREA (พื้นฐาน)
+       ============================== */
+    input,
+    textarea {
+        color: white;                   /* สีตัวอักษรในช่องกรอก */
+        background: #333;               /* พื้นหลังสีเทาเข้ม */
+        border: none;                   /* เอาขอบ default ออก */
+        font-size: 16px;                /* ขนาดตัวอักษร */
+        border-radius: 8px;             /* มุมโค้งของช่องกรอก */
+        box-sizing: border-box;         /* คำนวณ padding รวมใน width */
+    }
+
+    /* ==============================
+       USER NAME ROW (ชื่อ-นามสกุล)
+       ============================== */
     .user-box {
-      display: flex;
-      justify-content: space-between;
-      gap: 5px;
+        display: flex;                  /* วาง input ในแนวนอน */
+        gap: 5px;                       /* ระยะห่างระหว่างช่อง */
     }
-    .user-box input[placeholder="Fistname"] {
-      box-sizing: border-box;
-      width: 50%;
-      padding: 10px;
-      margin: 10px 0;
-      border: none;
-      border-radius:8px 0 0 8px;
-      background: #333;
-      color: white;
-      font-size: 16px;
+
+    .user-box input {
+        width: 50%;                     /* ให้แต่ละช่องกว้างครึ่งหนึ่ง */
+        padding: 10px;                  /* ระยะห่างด้านในช่อง */
+        margin: 10px 0;                 /* เว้นระยะบน-ล่าง */
     }
-    .user-box input[placeholder="Lastname"] {
-      width: 50%;
-      padding: 10px;
-      margin: 10px 0;
-      border: none;
-      border-radius: 0 8px 8px 0;
-      background: #333;
-      color: white;
-      font-size: 16px;
+
+    .user-box input:first-child {
+        border-radius:                 /* มุมโค้งเฉพาะด้านซ้าย */
+            8px 0 0 8px;
     }
+
+    .user-box input:last-child {
+        border-radius:                 /* มุมโค้งเฉพาะด้านขวา */
+            0 8px 8px 0;
+    }
+    /* ===================================================
+    BIRTHDAY (วันเกิด + อายุ)
+    =================================================== */
     .birtday-box {
-      display: flex;
-      justify-content: space-between;
-      gap: 5px;
+    display: flex;               /* จัด input ให้อยู่ในแนวนอน */
+    gap: 5px;                    /* เว้นระยะห่างระหว่างช่อง */
     }
+
+    .birtday-box .form-control {
+    padding: 12px;               /* ระยะห่างภายในช่องกรอก */
+    margin: 10px 0;              /* เว้นระยะบน-ล่าง */
+    height: 46px;                /* ★ ความสูงหลักที่ทำให้ Age ไม่อ้วน */
+    }
+
     .birtday-box input[type="date"] {
-      box-sizing: border-box;
-      width: 100%;
-      padding: 12px;
-      margin: 10px 0;
-      border: none;
-      border-radius: 8px 0 0 8px;
-      background: #333;
-      color: white;
-      font-size: 16px;
+    flex: 1;                     /* ให้ช่องวันเกิดขยายกินพื้นที่ที่เหลือ */
+    border-radius:               /* โค้งเฉพาะด้านซ้าย */
+        8px 0 0 8px;
     }
 
-  .birtday-box input[type="age"] {
-      box-sizing: border-box;
-      width: 20%;
-      padding: 12px;
-      margin: 10px 0;
-      border: none;
-      border-radius:0 8px 8px 0;
-      background: #333;
-      color: white;
-      font-size: 16px;
-      text-align: center;
+    .birtday-box input[type="number"] {
+    width: 80px;                 /* ความกว้างคงที่ของช่อง Age */
+    text-align: center;          /* จัดตัวเลขให้อยู่กลาง */
+    border-radius:               /* โค้งเฉพาะด้านขวา */
+        0 8px 8px 0;
     }
 
-    /* ทำให้ placeholder ของ date อ่านง่าย */
-    .birtday-box input[type="date"]::-webkit-calendar-picker-indicator {
-      filter: invert(1);  /* เปลี่ยนไอคอนปฏิทินให้เป็นสีขาว */
-    }
-
-    /* กล่องรวม gender */
+    /* ===================================================
+    GENDER (เลือกเพศ)
+    =================================================== */
     .gender-box {
-      display: flex;
-      gap: 10px;         /* ให้มีระยะห่างระหว่างปุ่ม */
+    display: flex;               /* จัดตัวเลือกเพศในแนวนอน */
+    gap: 10px;                   /* ระยะห่างระหว่างตัวเลือก */
     }
 
     .gender-option {
-      flex: 1;             /* ให้แต่ละปุ่มกว้างเท่าๆ กัน */
-      position: relative;
+    flex: 1;                     /* ให้แต่ละตัวเลือกกว้างเท่ากัน */
+    position: relative;          /* ใช้เป็นฐานสำหรับ element ลูก */
     }
 
     .gender-option input {
-      display: none;       /* ซ่อน radio เดิม */
+    display: none;               /* ซ่อน radio จริง */
     }
 
-    /* ปุ่มที่เห็นจริง */
     .custom-radio {
-      margin: 10px 0;
-      display: flex;
-      box-sizing: border-box;
-      width: 100%;
-      padding: 0px 20px;
-      background: #333;
-      color: white;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: 0.3s;
-      border: 2px solid transparent;
-      font-size: 30px;
-      justify-content: center;
+    display: flex;               /* ใช้ flex เพื่อจัด icon */
+    justify-content: center;     /* จัด icon ให้อยู่กลาง */
+    padding: 0 20px;             /* ระยะห่างซ้าย-ขวา */
+    margin: 10px 0;              /* เว้นระยะบน-ล่าง */
+    font-size: 30px;             /* ขนาด icon */
+    border-radius: 8px;          /* มุมโค้ง */
+    border: 2px solid transparent; /* เตรียมขอบไว้ (ยังไม่แสดง) */
+    background: #333;            /* พื้นหลังสีเข้ม */
+    cursor: pointer;             /* เมาส์เป็นรูปมือ */
+    transition: 0.3s;            /* ทำให้การเปลี่ยนลื่น */
     }
 
-    /* hover ให้ดูคลิกได้ */
     .custom-radio:hover {
-      background: #444;
+    background: #444;            /* เปลี่ยนสีเมื่อเอาเมาส์ชี้ */
     }
 
-    /* เมื่อถูกเลือก */
-    .gender-option input[type="radio"]:checked + .custom-radio {
-      border-color: #ff4f81;
-      background: #333;
-      box-shadow: 0 0 5px #ff4f81;
+    .gender-option input:checked + .custom-radio {
+    border-color: #ff4f81;       /* ขอบชมพูเมื่อเลือกแล้ว */
+    box-shadow: 0 0 5px #ff4f81; /* เรืองแสงเบา ๆ */
     }
 
+    /* ===================================================
+    PROFILE IMAGE + ADDRESS
+    =================================================== */
     .profile-row {
-      display: flex;             /* ให้อยู่ข้างกัน */
-      align-items: center;       /* จัดให้อยู่กึ่งกลางแนวตั้ง */
-      gap: 15px;                 /* ระยะห่างระหว่างรูปกับช่องกรอก */
-      margin: 15px 0;
-      justify-content: space-between;
+    display: flex;               /* จัดรูปกับที่อยู่ในแถวเดียวกัน */
+    justify-content: space-between; /* แยกซ้าย-ขวา */
+    align-items: center;         /* จัดแนวกลางแนวตั้ง */
+    gap: 15px;                   /* ระยะห่างระหว่างคอลัมน์ */
+    margin: 15px 0;              /* เว้นระยะบน-ล่าง */
     }
 
     #imageUpload {
-      display: none;
+    display: none;               /* ซ่อน input file จริง */
     }
-    .preview-img img {
-      cursor: pointer;
-    }
+
     .preview-img {
-      width: 100px;
-      height: 100px;
-      background: rgba(255,255,255,0.1);
-      border: 2px dashed #888;
-      border-radius: 10px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
-      position: relative;
-      overflow: hidden;
+    width: 100px;                /* ความกว้างกล่องรูป */
+    height: 100px;               /* ความสูงกล่องรูป */
+    border-radius: 10px;         /* มุมโค้ง */
+    background: rgba(255, 255, 255, 0.1); /* พื้นหลังโปร่ง */
+    border: 2px dashed #888;     /* เส้นขอบแบบประ */
+    display: flex;               /* ใช้ flex จัด icon */
+    align-items: center;         /* จัดแนวตั้ง */
+    justify-content: center;     /* จัดแนวนอน */
+    cursor: pointer;             /* ให้รู้ว่ากดได้ */
+    position: relative;          /* ใช้กับ pseudo-element */
+    overflow: hidden;            /* กันรูปทะลุขอบ */
     }
 
-    /* ไอคอนกล้อง */
     .preview-img::before {
-      content: "📷";
-      color: #ccc;
-      font-size: 25px;
-      position: absolute;
-      opacity: 0.7;
+    content: "📷";               /* icon กล้อง */
+    font-size: 25px;             /* ขนาด icon */
+    color: #ccc;                 /* สี icon */
+    opacity: 0.7;                /* ความโปร่ง */
+    position: absolute;          /* วางทับกลางกล่อง */
     }
 
-    /* ซ่อน placeholder กล้องเมื่อมีภาพ */
     .preview-img.has-image::before {
-      display: none;
+    display: none;               /* ซ่อน icon เมื่อมีรูปแล้ว */
     }
 
-    /* ตัวรูป */
     .preview-img img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: none;   /* ซ่อนรูปจนกว่าจะมีการอัปโหลด */
-      border-radius: 10px;
+    width: 100%;                 /* ให้รูปเต็มกล่อง */
+    height: 100%;                /* ให้รูปเต็มกล่อง */
+    object-fit: cover;           /* ครอบรูปไม่ยืด */
+    display: none;               /* ซ่อนจนกว่าจะมีรูป */
+    border-radius: 10px;         /* มุมโค้งตามกล่อง */
     }
-    .preview-img img {
-      object-fit: cover;
-      border-radius: 10px;
-      border: 2px solid #fff;
-    }
+
+    /* ===================================================
+    ADDRESS (ที่อยู่)
+    =================================================== */
     .Living {
-      flex:1
+    flex: 1;                     /* ให้ textarea ขยายเต็มพื้นที่ */
     }
+
     .Living textarea {
-      width: 100%;
-      height: 100px;
-      box-sizing: border-box;
-      padding: 10px;
-      background: #333;
-      border: none;
-      border-radius: 8px;
-      color: white;
-      font-size: 16px;
-      resize: none;     /* กันไม่ให้ผู้ใช้ลากขยาย */
+    width: 100%;                 /* เต็มความกว้าง */
+    height: 100px;               /* ความสูง textarea */
+    padding: 10px;               /* ระยะห่างด้านใน */
+    resize: none;                /* ปิดการลากขยาย */
     }
 
-    /* ทำให้ placeholder อยู่บนซ้าย */
     .Living textarea::placeholder {
-      color: #bbb;
-      padding-top: 0;
+    color: #bbb;                 /* สี placeholder */
     }
 
+    /* ===================================================
+    PROFILE IMAGE VALIDATION
+    =================================================== */
+
+    /* default */
+    .preview-img {
+    border: 2px dashed #888;     /* สถานะปกติ */
+    }
+
+    /* invalid → แดง */
+    .was-validated #imageUpload:invalid + .preview-img {
+    border-color: var(--error-color); /* เปลี่ยนขอบเป็นแดง */
+    box-shadow: 0 0 6px var(--error-color); /* เรืองแสงแดง */
+    }
+
+    /* valid → เขียว */
+    .was-validated #imageUpload:valid + .preview-img,
+    .was-validated #imageUpload:valid ~ .preview-img {
+    border-color: #4caf50;       /* ขอบเขียวเมื่อผ่าน */
+    }
+
+    /* ===================================================
+    FAVORITE COLOR + MUSIC
+    =================================================== */
     .music-color-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      margin: 15px 0;
-      align-items: center;
+    display: flex;               /* วาง color กับ music คู่กัน */
+    gap: 10px;                   /* ระยะห่าง */
+    margin: 15px 0;              /* เว้นระยะบน-ล่าง */
+    align-items: center;         /* จัดแนวกลาง */
     }
 
     .color-box,
     .music-box {
-      flex: 1;
-      color: white;
-      font-size: 14px;
+    flex: 1;                     /* กว้างเท่ากัน */
+    font-size: 14px;             /* ขนาดตัวอักษร */
     }
 
     .color-box input[type="color"] {
-      width: 100%;
-      height: 45px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      padding: 0;
+    width: 100%;                 /* เต็มกล่อง */
+    height: 45px;                /* ความสูง */
+    border-radius: 8px;          /* มุมโค้ง */
+    cursor: pointer;             /* เมาส์เป็นมือ */
+    padding: 0;                  /* ลบ padding default */
     }
 
-    .music-box .music-options {
-      background: #333;
-      padding: 10px;
-      border-radius: 8px;
-      display: flex;
-      justify-content: space-around;
-      font-size: 10px;
+    .music-options {
+    display: flex;               /* จัดตัวเลือกเพลงแนวนอน */
+    justify-content: space-around; /* กระจายเท่า ๆ กัน */
+    background: #333;            /* พื้นหลังเข้ม */
+    padding: 10px;               /* ระยะห่างด้านใน */
+    border-radius: 8px;          /* มุมโค้ง */
+    font-size: 10px;             /* ตัวอักษรเล็ก */
     }
 
-    .music-box label {
-      cursor: pointer;
-    }
-
-    .music-box input[type="radio"] {
-      margin-right: 5px;
-    }
-    /* กล่อง checkbox */
+    /* ===================================================
+    CONSENT CHECKBOX
+    =================================================== */
     .consent-box {
-      margin-top: 10px;
-      margin-bottom: 10px;
-      font-size: 14px;
+    margin: 10px 0;              /* เว้นระยะบน-ล่าง */
+    font-size: 14px;             /* ขนาดตัวอักษร */
     }
 
-    /* แถวปุ่ม Reset / Submit */
+    /* ===================================================
+    BUTTONS (ปุ่ม)
+    =================================================== */
     .button-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
+    display: flex;               /* วางปุ่มแนวนอน */
+    gap: 10px;                   /* ระยะห่างระหว่างปุ่ม */
     }
 
-    /* ปุ่ม Reset */
+    .reset-btn,
+    .submit-btn {
+    flex: 1;                     /* กว้างเท่ากัน */
+    padding: 12px;               /* ระยะห่างด้านใน */
+    border: none;                /* ลบขอบ default */
+    border-radius: 8px;          /* มุมโค้ง */
+    font-size: 16px;             /* ขนาดตัวอักษร */
+    cursor: pointer;             /* เมาส์เป็นมือ */
+    transition: 0.3s;            /* ทำให้ hover ลื่น */
+    }
+
     .reset-btn {
-      flex: 1;
-      padding: 12px;
-      border: none;
-      border-radius: 8px;
-      background: #666;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-      transition: 0.3s;
+    background: #c9c9c9ff;       /* สีเทาอ่อน */
     }
 
     .reset-btn:hover {
-      background: #888;
+    background: #888;            /* เทาเข้มเมื่อ hover */
     }
 
-    /* ปุ่ม Submit */
     .submit-btn {
-      flex: 1;
-      padding: 12px;
-      border: none;
-      border-radius: 8px;
-      background: #ff4f81;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-      transition: 0.3s;
+    background: #ff4f81;         /* ชมพูธีม */
+    color: white;                /* ตัวอักษรสีขาว */
     }
 
     .submit-btn:hover {
-      background: #ff75a0;
+    background: #ff75a0;         /* ชมพูอ่อนเมื่อ hover */
+    }
+    /* ---------------------------------------------
+    OVERRIDE BOOTSTRAP FORM CONTROL
+    --------------------------------------------- */
+    .form-control {
+    background-color: #333;          /* เปลี่ยนพื้นหลัง input ของ Bootstrap ให้เป็นสีเข้ม */
+    color: white;                    /* เปลี่ยนสีตัวอักษรใน input ให้เป็นสีขาว */
+    border: none;                    /* ลบเส้นขอบ default ของ Bootstrap */
     }
 
-  </style>
-</head>
-<body>
-  <div class="register-box">
-    <h2>Workshop # HTML-FORM</h2>
-    <form>
-      <div class="user-box">
-        <input type="text" placeholder="Fistname" required>
-        <input type="text" placeholder="Lastname" required>
-      </div>
-      <div class="birtday-box">
-        <input type="date" placeholder="Birthday" required>
-        <input type="age" placeholder="Age" required>
-      </div>
-      <div class="gender-box">
+    .form-control::placeholder {
+    color: #bbb;                     /* กำหนดสี placeholder ให้เป็นสีเทาอ่อน */
+    }
+
+    /* ---------------------------------------------
+    FIX VALIDATION BORDER
+    --------------------------------------------- */
+    .form-control {
+    background-color: #333;          /* ย้ำพื้นหลังให้ตรงกับธีม (กัน Bootstrap เขียนทับ) */
+    color: white;                    /* ย้ำสีตัวอักษร */
+    border: 1px solid #555;          /* ★ เพิ่มขอบปกติ (ถ้าไม่ใส่ validation จะไม่เห็นขอบ) */
+    }
+
+    .form-control:focus {
+    background-color: #333;          /* ตอน focus ยังใช้พื้นหลังสีเดิม */
+    color: white;                    /* ตัวอักษรยังเป็นสีขาว */
+    border-color: #ff4f81;           /* เปลี่ยนขอบเป็นสีชมพูตอนคลิก */
+    box-shadow: none;                /* ปิดเงาฟ้า default ของ Bootstrap */
+    }
+
+    /* ---------------------------------------------
+    RADIO (GENDER) INVALID – กรณียังไม่เลือกเพศ
+    --------------------------------------------- */
+    .was-validated input[type="radio"]:invalid + .custom-radio {
+    border-color: #ac0000;           /* เปลี่ยนกรอบไอคอนเพศเป็นสีแดงเข้ม */
+    box-shadow: 0 0 5px #ac0000;     /* ใส่แสงเรืองสีแดงเพื่อเน้น error */
+    }
+
+    /* =============================================
+    VALIDATION BORDER (ระบบตรวจสอบความถูกต้อง)
+    ============================================= */
+
+    /* invalid = แดง */
+    /* ===== INVALID INPUT / TEXTAREA ===== */
+    .was-validated .form-control:invalid {
+    border-color: var(--error-color); /* เปลี่ยนขอบ input / textarea ที่ผิดเป็นสีแดง */
+    box-shadow: 0 0 5px var(--error-color); /* ใส่แสงเรืองสีแดง */
+    }
+
+    /* ---------------------------------------------
+    IMAGE VALID (อัปโหลดรูปผ่าน)
+    --------------------------------------------- */
+    .was-validated #imageUpload:valid + .preview-img {
+    border-color: #4caf50;           /* กรอบรูปเป็นสีเขียวเมื่อเลือกรูปแล้ว */
+    box-shadow: 0 0 6px #4caf50;     /* แสงเรืองสีเขียว */
+    }
+
+    /* ---------------------------------------------
+    valid = เขียว
+    --------------------------------------------- */
+    .was-validated .form-control:valid {
+    border-color: #4caf50;           /* input / textarea ที่ผ่าน → ขอบสีเขียว */
+    }
+
+    /* ---------------------------------------------
+    RADIO เพศ (กรณี invalid)
+    --------------------------------------------- */
+    /* ===== GENDER RADIO INVALID ===== */
+    .was-validated input[type="radio"]:invalid + .custom-radio {
+    border-color: var(--error-color); /* ใช้สีแดงจากตัวแปรกลาง */
+    box-shadow: 0 0 6px var(--error-color); /* แสงเรืองแดง */
+    }
+
+    /* ---------------------------------------------
+    CHECKBOX (ยินยอมให้เก็บข้อมูล)
+    --------------------------------------------- */
+    .was-validated .form-check-input:invalid {
+    border-color: #ff4f81;           /* เปลี่ยนกรอบ checkbox เป็นสีชมพูเมื่อไม่ติ๊ก */
+    }
+
+    /* ---------------------------------------------
+    MUSIC RADIO INVALID (เลือกแนวเพลง)
+    --------------------------------------------- */
+    .was-validated .music-box input[type="radio"]:invalid ~ .music-options,
+    .was-validated .music-box .music-options:has(input:invalid) {
+    border: 2px solid var(--error-color); /* ใส่กรอบแดงรอบกล่องเพลง */
+    box-shadow: 0 0 6px var(--error-color); /* แสงเรืองสีแดง */
+    }
+
+    /* ---------------------------------------------
+    MUSIC RADIO VALID (เลือกแล้ว)
+    --------------------------------------------- */
+    .was-validated .music-box .music-options:has(input:checked) {
+    border: 2px solid #4caf50;       /* กล่องเพลงเป็นสีเขียวเมื่อเลือกแล้ว */
+    box-shadow: 0 0 6px #4caf50;     /* แสงเรืองสีเขียว */
+    }
+
+    /* ---------------------------------------------
+    ปิดแท็ก style
+    --------------------------------------------- */
+</style>
+{{-- ปิดแท็ก style --}}
+@endsection
+{{-- ปิด section style --}}
+
+@section('content')
+{{-- เปิด section content เพื่อส่งเนื้อหาหน้าเว็บไปให้ layout หลัก --}}
+
+<div class="register-box">
+{{-- กล่องหลักของฟอร์ม ใช้จัดตำแหน่ง + พื้นหลัง + เงา --}}
+
+  <h2>Workshop # HTML-FORM</h2>
+  {{-- หัวข้อฟอร์ม แสดงชื่อแบบฟอร์มด้านบน --}}
+
+  <form class="needs-validation" novalidate>
+  {{-- เปิดแท็ก form --}}
+  {{-- needs-validation = ใช้ร่วมกับ Bootstrap validation --}}
+  {{-- novalidate = ปิด validation ของ browser เพื่อใช้ของเราเอง --}}
+
+    <div class="user-box">
+    {{-- กล่องรวมช่องชื่อและนามสกุล ให้อยู่แถวเดียวกัน --}}
+
+        <input type="text" class="form-control" placeholder="Firstname" required>
+        {{-- ช่องกรอกชื่อ --}}
+        {{-- required = บังคับต้องกรอก --}}
+        {{-- form-control = ใช้สไตล์ร่วมกับ Bootstrap + CSS ที่เขียนเอง --}}
+
+        <input type="text" class="form-control" placeholder="Lastname" required>
+        {{-- ช่องกรอกนามสกุล --}}
+    </div>
+    {{-- ปิดกล่อง user-box --}}
+
+    <div class="birtday-box">
+    {{-- กล่องวันเกิด + อายุ จัดให้อยู่แถวเดียวกัน --}}
+
+        <input type="date" class="form-control" required>
+        {{-- ช่องเลือกวันเกิด --}}
+        {{-- type="date" ทำให้ browser แสดง date picker --}}
+
+        <input type="number" class="form-control" placeholder="Age" required>
+        {{-- ช่องกรอกอายุ --}}
+        {{-- type="number" จำกัดให้ใส่เฉพาะตัวเลข --}}
+    </div>
+    {{-- ปิดกล่อง birthday-box --}}
+
+    <div class="gender-box">
+    {{-- กล่องเลือกเพศ (radio) --}}
+
         <label class="gender-option">
-          <input type="radio" name="gender" value="male">
-          <span class="custom-radio"> 👦🏻 </span>
+        {{-- label ครอบ radio + icon เพื่อให้คลิกง่าย --}}
+
+            <input type="radio" name="gender" value="male" required>
+            {{-- radio เพศชาย --}}
+            {{-- name="gender" ทำให้เลือกได้แค่หนึ่งตัว --}}
+            {{-- required = ต้องเลือกอย่างน้อยหนึ่ง --}}
+
+            <span class="custom-radio">👦🏻</span>
+            {{-- ไอคอนเพศชาย ใช้แทน radio ปกติ --}}
         </label>
 
         <label class="gender-option">
-          <input type="radio" name="gender" value="female">
-          <span class="custom-radio"> 👩🏻 </span>
+        {{-- label ครอบ radio เพศหญิง --}}
+
+            <input type="radio" name="gender" value="female">
+            {{-- radio เพศหญิง --}}
+            {{-- ไม่ต้องใส่ required ซ้ำ เพราะอยู่กลุ่มเดียวกัน --}}
+
+            <span class="custom-radio">👩🏻</span>
+            {{-- ไอคอนเพศหญิง --}}
         </label>
-      </div>
-      <div class="profile-row">
+    </div>
+    {{-- ปิดกล่อง gender-box --}}
+
+    <div class="profile-row">
+    {{-- กล่องรวมรูปโปรไฟล์ + ที่อยู่ --}}
+
+        <input type="file" id="imageUpload" accept="image/*" required>
+        {{-- input สำหรับอัปโหลดรูป --}}
+        {{-- accept="image/*" จำกัดให้เลือกเฉพาะไฟล์รูป --}}
+        {{-- ซ่อนไว้แล้วใช้ div preview แทน --}}
+
         <div class="preview-img">
-          <img id="preview" src="" alt="">
-        </div>
-        <div class="Living">
-          <textarea placeholder="Address"></textarea>
-        </div>
-        <input type="file" id="imageUpload" accept="image/*">
-      </div>
+        {{-- กล่องแสดงตัวอย่างรูป --}}
+        {{-- ใช้แทน input file เพื่อ UX ที่สวยขึ้น --}}
 
-      <div class="music-color-row">
-        <div class="color-box">
-          <label>Favorite Color</label>
-          <input type="color" id="favColor" value="#ff4f81">
+            <img id="preview" src="">
+            {{-- แสดงรูป preview หลังจากผู้ใช้เลือกไฟล์ --}}
         </div>
+        {{-- ปิดกล่อง preview-img --}}
+
+        <div class="Living">
+        {{-- กล่องที่อยู่ (Address) --}}
+
+            <textarea class="form-control" placeholder="Address" required></textarea>
+            {{-- ช่องกรอกที่อยู่ --}}
+            {{-- textarea ใช้สำหรับข้อความหลายบรรทัด --}}
+        </div>
+        {{-- ปิดกล่อง Living --}}
+    </div>
+    {{-- ปิดกล่อง profile-row --}}
+
+    <div class="music-color-row">
+    {{-- กล่องสีโปรด + แนวเพลง --}}
+
+        <div class="color-box">
+        {{-- กล่องเลือกสี --}}
+
+            <label>Favorite Color</label>
+            {{-- ป้ายกำกับช่องเลือกสี --}}
+
+            <input type="color" id="favColor" value="#1e90ff">
+            {{-- ช่องเลือกสี --}}
+            {{-- value คือสีเริ่มต้น --}}
+        </div>
+        {{-- ปิดกล่อง color-box --}}
 
         <div class="music-box">
-          <label>Music Type</label>
-          <div class="music-options">
-            <label><input type="radio" name="music" value="เพื่อชีวิต"> เพื่อชีวิต</label>
-            <label><input type="radio" name="music" value="ลูกทุ่ง"> ลูกทุ่ง</label>
-            <label><input type="radio" name="music" value="อื่นๆ"> อื่นๆ</label>
-          </div>
-        </div>
-      </div>
-      <div class="consent-box">
-        <label>
-          <input type="checkbox" id="consent" required>
-          ยินยอมให้เก็บข้อมูล
-        </label>
-      </div>
+        {{-- กล่องเลือกแนวเพลง --}}
 
-      <div class="button-row">
+            <label>Music Type</label>
+            {{-- ป้ายกำกับแนวเพลง --}}
+
+            <div class="music-options">
+            {{-- กล่องรวม radio แนวเพลง --}}
+
+                <label>
+                    <input type="radio" name="music" value="เพื่อชีวิต" required>
+                    เพื่อชีวิต
+                    {{-- radio แนวเพลง เพื่อชีวิต --}}
+                </label>
+
+                <label>
+                    <input type="radio" name="music" value="ลูกทุ่ง">
+                    ลูกทุ่ง
+                    {{-- radio แนวเพลง ลูกทุ่ง --}}
+                </label>
+
+                <label>
+                    <input type="radio" name="music" value="อื่นๆ">
+                    อื่นๆ
+                    {{-- radio แนวเพลง อื่นๆ --}}
+                </label>
+            </div>
+            {{-- ปิดกล่อง music-options --}}
+        </div>
+        {{-- ปิดกล่อง music-box --}}
+    </div>
+    {{-- ปิดกล่อง music-color-row --}}
+
+    <!-- ★ ปรับ checkbox ให้ validate ได้ -->
+    <div class="consent-box form-check">
+    {{-- กล่องยินยอมให้เก็บข้อมูล --}}
+
+        <input class="form-check-input" type="checkbox" required>
+        {{-- checkbox ยินยอม --}}
+        {{-- required = ต้องติ๊กก่อน submit --}}
+
+        <label class="form-check-label">ยินยอมให้เก็บข้อมูล</label>
+        {{-- ข้อความอธิบาย checkbox --}}
+    </div>
+    {{-- ปิดกล่อง consent-box --}}
+
+    <div class="button-row">
+    {{-- กล่องปุ่ม Reset และ Submit --}}
+
         <button type="reset" class="reset-btn">Reset</button>
+        {{-- ปุ่มรีเซ็ตฟอร์ม กลับค่าเริ่มต้น --}}
+
         <button type="submit" class="submit-btn">Sign Up</button>
-      </div>
-    </form>
-  </div>
-</body>
+        {{-- ปุ่มส่งฟอร์ม ตรวจ validation ก่อนส่ง --}}
+    </div>
+    {{-- ปิดกล่อง button-row --}}
+
+  </form>
+  {{-- ปิดแท็ก form --}}
+
+</div>
+{{-- ปิดกล่อง register-box --}}
+@endsection
+{{-- ปิด section content --}}
+
+@section('script')
+{{-- เปิด section script สำหรับใส่ JavaScript ของหน้านี้ --}}
 
 <script>
+/* ---------------------------------------------------
+   IMAGE PREVIEW
+--------------------------------------------------- */
+
+// ดึง input type="file" สำหรับอัปโหลดรูป โดยอ้างอิงจาก id
 const upload = document.getElementById("imageUpload");
+
+// ดึงแท็ก img ที่ใช้แสดงรูป preview
 const preview = document.getElementById("preview");
 
-preview.parentElement.addEventListener("click", () => upload.click());
+// ดึง div ที่ครอบ img preview (ใช้เป็นกล่องกดเลือกไฟล์)
+const previewBox = preview.parentElement;
 
+// ดึงปุ่ม Reset เพื่อใช้จัดการตอนรีเซ็ตฟอร์ม
+const resetBtn = document.querySelector(".reset-btn");
+
+// เมื่อผู้ใช้คลิกที่กล่อง preview-img
+previewBox.addEventListener("click", () => upload.click());
+// สั่งให้ browser เปิด dialog เลือกไฟล์แทนการคลิก input file ตรง ๆ
+
+// เมื่อมีการเลือกไฟล์ใหม่จาก input file
 upload.addEventListener("change", function () {
+
+  // ดึงไฟล์แรกที่ผู้ใช้เลือก
   const file = this.files[0];
+
+  // ตรวจสอบว่ามีไฟล์จริง ๆ ถูกเลือกเข้ามา
   if (file) {
+
+    // สร้าง URL ชั่วคราวจากไฟล์ เพื่อใช้แสดงรูป
     preview.src = URL.createObjectURL(file);
-    preview.style.display = "block";                  // แสดงรูป
-    preview.parentElement.style.border = "none";      // เอาเส้นประออก
-    preview.parentElement.style.background = "none";  // เอาพื้นหลังออก
-    preview.parentElement.classList.add("has-image"); // ใช้ class ถ้าต้องเพิ่มฟีเจอร์ทีหลัง
+
+    // แสดงแท็ก img ที่เดิมซ่อนไว้
+    preview.style.display = "block";
+
+    // เพิ่ม class เพื่อบอกว่าตอนนี้มีรูปแล้ว
+    previewBox.classList.add("has-image");
+
+    // ลบเส้นขอบเดิมออก (กันชนกับ validation)
+    previewBox.style.border = "none";
+
+    // ลบพื้นหลังจาง ๆ เดิมออก
+    previewBox.style.background = "none";
   }
 });
+
+/* ---------------------------------------------------
+   COLOR PICKER
+--------------------------------------------------- */
+
+// ดึง input type="color" สำหรับเลือกสีโปรด
+const colorPicker = document.querySelector('.color-box input[type="color"]');
+
+// กำหนดค่าสีชมพูธีมเริ่มต้น
+const defaultPink = "#ff4f81";
+
+// กำหนดค่าสีน้ำเงินเริ่มต้น
+const defaultBlue = "#1e90ff";
+
+// เมื่อผู้ใช้เปลี่ยนสีจาก color picker
+colorPicker.addEventListener("input", function () {
+
+  // เก็บค่าสีที่ผู้ใช้เลือก
+  const userColor = this.value;
+
+  // เปลี่ยน background ของ body แบบไล่สี
+  document.body.style.background =
+    `linear-gradient(135deg, ${defaultPink}, ${userColor})`;
+});
+
+/* ---------------------------------------------------
+   RESET BUTTON
+--------------------------------------------------- */
+
+// เมื่อผู้ใช้กดปุ่ม Reset
+resetBtn.addEventListener("click", () => {
+
+  // ล้างค่าไฟล์ที่เลือกไว้
+  upload.value = "";
+
+  // ล้าง src ของรูป preview
+  preview.src = "";
+
+  // ซ่อนรูป preview
+  preview.style.display = "none";
+
+  // ลบ class ที่บอกว่ามีรูปแล้ว
+  previewBox.classList.remove("has-image");
+
+  // คืนเส้นขอบแบบ dashed กลับมาเหมือนตอนเริ่ม
+  previewBox.style.border = "2px dashed #888";
+
+  // คืนพื้นหลังจาง ๆ ของกล่องรูป
+  previewBox.style.background = "rgba(255,255,255,0.1)";
+
+  // รีเซ็ต background ของหน้าเว็บกลับเป็นค่าเริ่มต้น
+  document.body.style.background =
+    `linear-gradient(135deg, ${defaultPink}, ${defaultBlue})`;
+
+  // รีเซ็ตค่า color picker ให้กลับเป็นสีเริ่มต้น
+  colorPicker.value = defaultPink;
+
+  // ⭐ สำคัญ: ลบ class was-validated
+  // เพื่อเอากรอบแดง / เขียว ของ validation ออกทั้งหมด
+  const form = document.querySelector('.needs-validation');
+
+  // ลบสถานะ validate เพื่อให้หน้ากลับไปเหมือนตอนเพิ่งเข้ามา
+  form.classList.remove('was-validated');
+});
+
+
+(() => {
+  'use strict'
+  // ใช้ strict mode เพื่อป้องกัน error แปลก ๆ ใน JavaScript
+
+  // ดึง form ทุกตัวที่ใช้ class needs-validation
+  const forms = document.querySelectorAll('.needs-validation')
+
+  // แปลง NodeList เป็น Array เพื่อให้ใช้ forEach ได้
+  Array.from(forms).forEach(form => {
+
+    // ดัก event ตอนกด submit
+    form.addEventListener('submit', event => {
+
+      // ถ้าฟอร์มไม่ผ่าน validation
+      if (!form.checkValidity()) {
+
+        // ยกเลิกการ submit
+        event.preventDefault()
+
+        // หยุด event ไม่ให้ไหลต่อ
+        event.stopPropagation()
+      }
+
+      // เพิ่ม class was-validated
+      // เพื่อให้ CSS แสดงกรอบแดง / เขียว
+      form.classList.add('was-validated')
+
+    }, false)
+  })
+})()
+// ปิด IIFE (Immediately Invoked Function Expression)
+
 </script>
-</html>
+{{-- ปิดแท็ก script --}}
+@endsection
+{{-- ปิด section script --}}
+
+
+{{--🧠 ภาพรวมแนวคิดของหน้านี้ (ก่อนดู diagram)
+
+หน้านี้จริง ๆ มี 3 ชั้นหลัก ทำงานร่วมกัน
+
+[ USER ]
+   ↓
+[ HTML โครงสร้าง ]
+   ↓
+[ CSS แสดงสถานะ ]
+   ↑
+[ JavaScript ควบคุมพฤติกรรม ]
+
+
+HTML = บอกว่า “มีอะไรบ้าง”
+
+CSS = บอกว่า “ตอนนี้สถานะเป็นยังไง (ปกติ / ผิด / ถูก)”
+
+JavaScript = บอกว่า “เมื่อผู้ใช้ทำอะไร → ให้เปลี่ยนสถานะยังไง”
+
+🧭 FLOW DIAGRAM (อ่านจากบนลงล่าง)
+ผู้ใช้เข้าเว็บครั้งแรก
+│
+├─ ไม่มี class was-validated
+│   └─ ทุก input = สีปกติ (ไม่แดง ไม่เขียว)
+│
+├─ ผู้ใช้เริ่มกรอกข้อมูล
+│   ├─ กรอกชื่อ / นามสกุล
+│   ├─ เลือกวันเกิด + อายุ
+│   ├─ เลือกเพศ
+│   ├─ เลือกรูป
+│   ├─ เลือกแนวเพลง
+│   └─ ติ๊กยินยอม
+│
+├─ ผู้ใช้กด SUBMIT
+│
+├─ JavaScript ทำงาน
+│   ├─ form.checkValidity()
+│   │
+│   ├─ ❌ ถ้าไม่ผ่าน
+│   │   ├─ event.preventDefault()
+│   │   ├─ event.stopPropagation()
+│   │   └─ เพิ่ม class "was-validated"
+│   │
+│   └─ ✅ ถ้าผ่าน
+│       └─ (ฟอร์มพร้อมส่งจริงในอนาคต)
+│
+├─ CSS เห็น class was-validated
+│   ├─ input:invalid → กรอบแดง
+│   ├─ input:valid → กรอบเขียว
+│   ├─ radio เพศ → กรอบแดง/เขียว
+│   ├─ กล่องเพลง → กรอบแดง/เขียว
+│   └─ กล่องรูป → กรอบแดง/เขียว
+│
+└─ ผู้ใช้เห็นผลลัพธ์ทันทีบนหน้าจอ
+
+🎯 จุดสำคัญที่สุดของระบบนี้ (Key Concept)
+🔑 was-validated คือ “สวิตช์ใหญ่ทั้งหน้า”
+ไม่มี was-validated → ไม่มีใครโดนตัดสิน
+มี was-validated   → ทุกช่องถูกตรวจสอบ
+
+
+นี่คือเหตุผลที่:
+
+ตอนเข้าเว็บมา ไม่แดง
+
+กด submit แล้ว แดงพร้อมกัน
+
+กด reset แล้ว หายหมด
+
+🔍 FLOW เฉพาะแต่ละส่วน (แบบเข้าใจง่าย)
+1️⃣ INPUT / TEXTAREA
+HTML: required
+│
+JS: form.checkValidity()
+│
+CSS:
+  .was-validated .form-control:invalid → แดง
+  .was-validated .form-control:valid   → เขียว
+
+2️⃣ RADIO (เพศ / เพลง)
+HTML: required + name เดียวกัน
+│
+JS: checkValidity()
+│
+CSS:
+  input:invalid + .custom-radio → กรอบแดง
+  :has(input:checked) → กรอบเขียว
+
+
+radio ไม่มีกรอบ → เราเลย “สร้างกรอบปลอม” ด้วย span / div
+
+3️⃣ IMAGE UPLOAD
+HTML: input type="file" required
+│
+JS:
+  เลือกรูป → preview
+│
+CSS:
+  :invalid + .preview-img → แดง
+  :valid   + .preview-img → เขียว
+
+
+input file ถูกซ่อน → เราเอาสถานะมันมาแสดงที่กล่องแทน
+
+4️⃣ RESET BUTTON (ย้อนเวลา)
+ผู้ใช้กด Reset
+│
+JS:
+  ├─ ล้างค่า input
+  ├─ ล้าง preview
+  ├─ คืนสีพื้นหลัง
+  └─ ลบ class was-validated
+│
+CSS:
+  └─ ไม่มี was-validated → ทุกอย่างกลับปกติ
+
+🧠 Mental Model (จำแบบนี้พอ)
+
+❝ JavaScript ไม่ได้ทำให้แดง
+❝ CSS ไม่ได้รู้ว่ากด submit
+❝ ทุกอย่างเชื่อมกันด้วย class เดียว ❞
+
+JS = เพิ่ม / ลบ class
+CSS = ตีความสถานะ
+HTML = บอกกติกา--}}
